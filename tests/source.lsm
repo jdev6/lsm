@@ -1,0 +1,4 @@
+[ source tests/source2.lsm ] ,Source source2.lsm
+
+sput "We are in source.lsm!\n";
+sput "Value of @global is " @global "\n";

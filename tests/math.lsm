@@ -1,9 +1,9 @@
 ,Read a number from stdin and print its double
 
 sput "Enter a number -> ";
-sget @num;
-tonum @num; ,Convert input into number
+sget @input;
+tonum @input @num; ,Convert input into number
 
-sput "The double of "; sput @num; sput " is ";
-mul @num 2; ,Multiply by two
-sput @num; sput "!\n"; ,Print num
+sput "The double of " @num " is ";
+mul @num 2 @result; ,Multiply by two
+sput @result "!\n"; ,Print num

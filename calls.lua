@@ -1,5 +1,4 @@
 local _ = {}
-local lsm_reg = {}
 
 function _.def(a,b)
     --Define the value of a register
@@ -7,9 +6,11 @@ function _.def(a,b)
     return true
 end
 
-function _.sput(a)
-    --Print string
-    io.stdout:write(tostring(a.value))
+function _.sput(...)
+    --Print strings
+    for k,a in ipairs({...}) do
+        io.stdout:write(tostring(a.value))
+    end
     return true
 end
 
@@ -51,61 +52,114 @@ function _.exit(errno)
     os.exit(errno)
 end
 
-function _.add(...)
+function _.add(a,b,c)
     --Add numbers
-    local params = {...}
-    local dest = params[1]
-    local accum = 0
+    if not a or not b or not c then
+        return false
 
-    for k,p in ipairs(params) do
-        accum = accum+p.value
+    elseif type(a.value) == "number" and type(b.value) == "number" then
+        c.value = a.value + b.value
+        return true
+    else
+        c.value = nil
+        return false
+    end
+end
+
+function _.sub(a,b,c)
+    --Subtract numbers
+    if not a or not b or not c then
+        return false
+
+    elseif type(a.value) == "number" and type(b.value) == "number" then
+        c.value = a.value - b.value
+        return true
+    else
+        c.value = nil
+        return false
+    end
+end
+
+function _.div(a,b,c)
+    --Divide numbers
+    if not a or not b or not c then
+        return false
+
+    elseif type(a.value) == "number" and type(b.value) == "number" then
+        c.value = a.value / b.value
+        return true
+    else
+        c.value = nil
+        return false
+    end
+end
+
+function _.mul(a,b,c)
+    --Multiply numbers
+    if not a or not b or not c then
+        return false
+
+    elseif type(a.value) == "number" and type(b.value) == "number" then
+        c.value = a.value * b.value
+        return true
+    else
+        c.value = nil
+        return false
+    end
+end
+
+function _.arrdef(a, ...)
+    --Create array
+    if not a then
+        return false
+    end
+    a.value = {}
+    for k,e in ipairs({...}) do
+        a.value[k] = e.value
     end
 
-    dest.value = accum
     return true
 end
 
-function _.mul(...)
-    --Multiply numbers
-    local params = {...}
-    local dest = params[1]
-    local accum = 1
-
-    for k,p in ipairs(params) do
-        accum = accum*p.value
+function _.arridx(a, idx, b)
+    if not a or not idx or not b then
+        return false
     end
+    --Index array a with index idx and put the value in b
+    b.value = a.value[idx.value]
 
-    dest.value = accum
-    return true    
+    return b.value ~= nil
 end
 
-function _.div(a,b)
-    --Divide numbers
-    a.value = a.value/b.value
-    return true    
-end
-function _.sub(a,b)
-    --Subtract numbers
-    --[[
-    local params = {...}
-    local dest = params[1]
-    local accum = 0
-
-    for k,p in ipairs(params) do
-        accum = p.value-accum
+function _.arrset(a,k,v)
+    --Set a key in an array
+    if not a or not k or not v then
+        return false
     end
+    a.value[k.value] = v.value
 
-    dest.value = accum--]]
-    a.value = a.value-b.value
-    return true    
+    return a.value ~= nil
 end
 
-
-function _.tonum(s)
+function _.tonum(a, b)
     --String to number
-    s.value = tonumber(s.value)
+    if not a or not b then
+        return false
+    end
+    b.value = tonumber(a.value)
 
-    return s.value ~= nil
+    return b.value ~= nil
 end
+
+function _.tostr(a, b)
+    --Number to string
+    if not a or not b then
+        return false
+    end
+    b.value = tostring(a.value)
+
+    return b.value ~= nil
+end
+
 
 return _

@@ -9,11 +9,23 @@ return function(tokens)
     dprint '--parse--'
     local cond_call = false
     local cond_inv = false
+    local line = 1
+    local file
 
     while i <= #tokens do
         tok = tokens[i]
+        
+        if tok.type == "line" then
+            --Add another line
+            line = line+1
+            next()
 
-        if tok.type == "keyword" then
+        elseif tok.type == "file" then
+            --Change file
+            file = tok.value
+            next()
+
+        elseif tok.type == "keyword" then
             local call = {
                 inv = cond_inv,
                 type = cond_call and "condcall" or "call",
@@ -45,7 +57,13 @@ return function(tokens)
                     end
                     })
                     tok.value = nil
+
+                elseif tok.type == "keyword" then
+                    lsm_error(
+                    "#nCannot use a keyword as a call argument!#nUnexpected keyword '"..tok.value.."' in "..file..":"..line
+                    )
                 end
+
                 table.insert(call.args, tok)
             until tok.type == "end"
             

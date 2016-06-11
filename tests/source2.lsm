@@ -1,0 +1,3 @@
+,This file will be source'd by source.lsm
+sput "We are in source2.lsm!\n";
+def @global 5;

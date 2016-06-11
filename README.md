@@ -27,7 +27,7 @@ eq @x "foo";
 
 `def @a,x` Set the value of @a to x
 
-`sput str` Write str to stdout
+`sput ...` Write the concatenation of ... (strings) to stdout
 
 `put c` Write character c to stdout
 
@@ -35,17 +35,19 @@ eq @x "foo";
 
 `sget @x` Same as `get` but reads a line
 
-`add @x,...` Adds arguments and puts the result in @x
+`add a b c` Adds a and b and puts result in c
 
-`mul @x,...` ^ with multiplication
+`mul a b c` Same as above with multiplication
 
-`div @x,...` division
+`div a b c` Division
 
-`sub @x,...` substraction
+`sub a b c` Substraction
 
 `eq ...` Sets the success code to true if all arguments are equal
 
-`tonum @x` Converts @x to a number and puts the result in @x
+`tonum x y` Converts x to a number and puts the result in y
+
+`tostr x y` Converts x to a string and puts the result in y
 
 `exit err` Exit with error code err
 

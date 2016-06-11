@@ -13,7 +13,7 @@ local escaped = {
     ['f'] = '\f'
 }
 
-return function(data)
+local function lex(data, file)
     local i = 1
     local c
     local tokens = {}
@@ -22,10 +22,22 @@ return function(data)
     local function push(tok) table.insert(tokens,tok) end
 
     dprint '---lex---'
+    push {
+        type = "file",
+        value = file
+    }
+    local line = 1
     while i <= #data do
         c = data:sub(i,i)
 
         if isspace(c) then
+            if c == '\n' then
+                --add line
+                line = line + 1
+                push {
+                    type = 'line'
+                }
+            end
             next()
         
         elseif c == END then
@@ -41,6 +53,58 @@ return function(data)
             repeat
                 next()
             until c == '\n'
+
+        elseif c == '[' then
+            --Begin preproccessor directive
+            local dirargs = {}
+
+            --Skip spaces
+            repeat next() until not isspace(c)
+
+            --Proccess preprocessor directive arguments
+            repeat
+                local arg = ""
+                repeat
+                    arg = arg .. c
+                    next()
+                until isspace(c) or c == ']'
+                --Skip spaces
+                if c ~= ']' then
+                    repeat next() until not isspace(c)
+                end
+                dprint("dirarg",arg)
+                table.insert(dirargs, arg)
+            until c == ']'
+            next()
+
+            --Execute preproccessor directive:
+            if dirargs[1] == "source" then
+                --Source
+                local lexedsources = {}
+                for k,file in ipairs(dirargs) do
+                    if k ~= 1 then
+                        local fp,err = io.open(file)
+                        if fp then
+                            local data = fp:read("*a")
+                            lexedsources[k-1] = lex(data, file)
+                        else
+                            --Error opening file
+                            lsm_error("#nCannot open file: ["..err.."] in "..file..":"..line)
+                        end
+                    end
+                end
+
+                for n,lexsrc in ipairs(lexedsources) do
+                    for k,tok in ipairs(lexsrc) do
+                        table.insert(tokens, tok)
+                    end
+                end
+
+                push {
+                    type = "file",
+                    value = file
+                }
+            end
 
         elseif isalpha(c) then
             --Keywords
@@ -96,7 +160,7 @@ return function(data)
                 value = reg:sub(2),
                 type = "register"
             }
-        
+       
         elseif c == '"' then
             --String
             local str = ""
@@ -121,10 +185,12 @@ return function(data)
             }
 
         else
-            dprintf("Syntax error: Unexpected '%s'", c)
+            lsm_error("#nSyntax error: Unexpected '"..c.."' in "..file..":"..line)
             next()
         end
     end
 
     return tokens
 end
+
+return lex

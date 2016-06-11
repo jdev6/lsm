@@ -25,7 +25,7 @@ eq @x "foo";
 
 #Calls
 
-`def a,x` Set the value of a to x
+`def a x` Set the value of a to x
 
 `sput ...` Write the concatenation of ... (strings) to stdout
 

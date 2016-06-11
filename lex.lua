@@ -1,8 +1,17 @@
 local function dprintf(s,...) dprint(s:format(...)) end
 require "is"
 
-local COMMENT = '?'
+local COMMENT = ','
 local END     = ';'
+
+local escaped = {
+    ['n'] = '\n',
+    ['"'] = '"',
+    ['r'] = '\r',
+    ['v'] = '\v',
+    ['t'] = '\t',
+    ['f'] = '\f'
+}
 
 return function(data)
     local i = 1
@@ -28,7 +37,7 @@ return function(data)
             next()    
 
         elseif c == COMMENT then
-            --Comment (?)
+            --Comment (,)
             repeat
                 next()
             until c == '\n'
@@ -44,6 +53,20 @@ return function(data)
             push {
                 value = keyw,
                 type = "keyword"
+            }
+        elseif c == '&' then
+            --Conditional call
+            next()
+            push {
+                type = "cond"
+            }
+
+        elseif c == '!' then
+            --Inversed contidional call
+            next()
+            push {
+                type = "cond",
+                inv = true
             }
 
         elseif isdigit(c) then
@@ -79,7 +102,14 @@ return function(data)
             local str = ""
             next()
             repeat
-                str = str .. c
+                if c == '\\' then
+                    --Backslash
+                    next()
+                    str = str .. escaped[c]
+                    
+                else
+                    str = str .. c
+                end
                 next()
             until c == '"'
             next()

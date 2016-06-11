@@ -1,0 +1,5 @@
+sget @x; ,get a line from stdin and put it into x
+
+eq @x "123"; ,is x 123?
+&sput "You guessed!"; ,x is 123
+!sput "You lost :(";  ,x isn't 123

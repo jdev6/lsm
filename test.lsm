@@ -1,4 +1,0 @@
-?assign "Hello world" to a variable and print it
-
-def @x "Hello world";
-sput @x;

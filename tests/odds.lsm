@@ -1,0 +1,21 @@
+,this was made to demonstrate how to replicate a loop
+,prints all odd numbers between 0 and 50
+
+def @max 50;
+def @num 0;
+
+>loop;
+add @num 1 @num; ,increase current value
+gt @num @max; ,if we reached the max number quit
+&goto >end;
+
+mod @num 2 @tmpnum; ,perform module division between num and 2 and put result into tmpnum
+
+eq @tmpnum 1; ,if it  isn't an odd number start the loop again
+!goto >loop;
+
+sput @num "\n"; ,print number if it's odd
+goto >loop;
+
+>end;
+sput "end!\n";

@@ -6,10 +6,14 @@ local exec = require "exec"
 
 lsm_version = "0.0.1"
 
-local eprintf = function(_,...) io.stderr:write(_:format(...)) end
+local function eprintf(_,...) io.stderr:write(_:format(...)) end
 
-function lsm_error(errstr)
-    io.stderr:write("lsm: Error:"..errstr:gsub("#n","\n    ").."\n")
+function lsm_error(str, err,f,ln)
+    err = err and (": ['%s']"):format(err) or ""
+
+    eprintf(
+        "lsm: Error: \n    %s%s\n    in %s:%i\n    at %s\n", str, err, f, ln, lsm_stage
+    )
     os.exit(1)
 end
 
@@ -31,32 +35,47 @@ Available options are:
 
     d = function()
         dprint = print
+        dprintf = function(s,...)
+            print(s:format(...))
+        end
+        inspect = require "inspect"
     end
 }
 
-dprint = function()end
+dprint  = function()end
+dprintf = function()end
+inspect = function()end
 
 local file
+local lsm_args = {}
 
 for k,a in ipairs(arg) do
     if a:sub(1,1) == '-' then
         opt[a:sub(2)]()
 
     else
-        file = a
-        local fp,err = io.open(a)
-        if fp then
-            io.input(fp)
+        if not file then
+            --execute lsm file
+            file = a
+            local fp,err = io.open(a)
+            if fp then
+                io.input(fp)
+            else
+                eprintf("%s: Error: File %s can't be read [%s]\n",arg[0],a,err)
+            end
         else
-            eprintf("%s: Error: File %s can't be read [%s]\n",arg[0],a,err)
+            --args for lsm program
+            lsm_args[#lsm_args+1] = a
         end
     end
 end
 
 local data = io.read("*a")
 
+if not file then file = "<stdin>" end
+
 local tokens = lex(data, file)
 
-local ast = parse(tokens)
+local ast = parse(tokens, file)
 
-exec(ast)
+exec(ast, lsm_args)

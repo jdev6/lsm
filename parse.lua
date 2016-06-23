@@ -1,39 +1,59 @@
-return function(tokens)
+return function(tokens, file)
+    lsm_stage = "parser"
+
     local i = 1
     local tok
+    local currfile = file
+    local fileslns = { [currfile] = 1 } --each file and its lines
+    local pc = 1
 
     local ast = {} 
-    local function push(x) table.insert(ast,x) end
+    local function push(x) pc=pc+1; table.insert(ast,x) end
     local function next() i=i+1; tok = tokens[i] end
 
     dprint '--parse--'
     local cond_call = false
-    local cond_inv = false
-    local line = 1
-    local file
+    local cond_call_inv = false
 
     while i <= #tokens do
         tok = tokens[i]
-        
+
         if tok.type == "line" then
             --Add another line
-            line = line+1
+            fileslns[currfile] = fileslns[currfile] + 1
+            push(tok)
             next()
 
         elseif tok.type == "file" then
             --Change file
-            file = tok.value
+            currfile = tok.value
+            fileslns[currfile] = fileslns[currfile] or 1
+            push {
+                type = tok.type,
+                id = tok.value
+            }
+            next()
+
+        elseif tok.type == "label" then
+            --labels in lsm_lab have a number that is the pc that they refer to, the 'position' in the code
+            if not lsm_lab[tok.value] then
+                lsm_lab[tok.value] = pc
+            end
+            next()
+
+        elseif tok.type == "end" then
+            --end
             next()
 
         elseif tok.type == "keyword" then
             local call = {
-                inv = cond_inv,
+                inv = cond_call_inv,
                 type = cond_call and "condcall" or "call",
                 id = tok.value,
                 args = {}
             }
             
-            cond_call, cond_inv = false, false
+            cond_call, cond_call_inv = false, false
 
             repeat
                 dprint(i,tok.type)
@@ -48,24 +68,30 @@ return function(tokens)
                             return rawget(self,k)
                         end
                     end,
+
                     __newindex=function(self,k,v)
                         if k == "value" then
                             lsm_reg[self.id] = v
                         else
                             rawset(self,k,v)
                         end
-                    end
-                    })
+                    end })
+
                     tok.value = nil
+                elseif tok.type == "label" then
+                    --Label
+                    tok = {
+                        type = tok.type,
+                        id = tok.value
+                    }
 
                 elseif tok.type == "keyword" then
-                    lsm_error(
-                    "#nCannot use a keyword as a call argument!#nUnexpected keyword '"..tok.value.."' in "..file..":"..line
-                    )
+                    lsm_error("Unexpected keyword '"..tok.value.."'", nil, currfile, fileslns[currfile])
                 end
 
-                table.insert(call.args, tok)
-            until tok.type == "end"
+                if tok.type ~= "line" then table.insert(call.args, tok) end
+                
+            until tok.type == "end" or tok == tokens[#tokens]
             
             call.args[#call.args] = nil
 
@@ -75,11 +101,9 @@ return function(tokens)
 
         elseif tok.type == "cond" then
             cond_call = true
-            cond_inv = tok.inv
+            cond_call_inv = tok.inv
             next()
         end
     end
-    
-    dprint 'parse'
     return ast
 end

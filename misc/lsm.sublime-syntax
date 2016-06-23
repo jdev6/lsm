@@ -22,15 +22,15 @@ contexts:
       scope: source.c meta.function.c meta.block.c keyword.operator.comparison.c
 
     # Keywords
-    - match: '\b[a-z]*\b'
+    - match: '(!)?(&)?[a-zA-Z_0-9_]*'
       scope: storage.type.c
 
     # Numbers
-    - match: '\b(-)?[0-9.]+\b'
+    - match: '\b(-)?[x0-9.]+\b'
       scope: constant.numeric.example-c
 
       #Labels
-    - match: ':[a-z]*:'
+    - match: '>[A-Z0-9_a-z]*'
       scope: source.c meta.function.c entity.name.function.c
 
       #Preproccessor

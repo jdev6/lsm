@@ -43,7 +43,13 @@ eq @x "foo";
 
 `sub a b c` Substraction
 
+`goto label` Jump to the location in the code that label represents
+
 `eq ...` Sets the success code to true if all arguments are equal
+
+`gt a b` Sets the success code to true if a > b
+
+`lt a b` Sets the success code to true if a < b
 
 `tonum x y` Converts x to a number and puts the result in y
 
@@ -61,12 +67,34 @@ Example : `arrdef a 2 4 6 8 ,defines a with array {2,4,6,8}`
 
 more to add in the future
 
-#Preproccessor directives
+#Flow control
 
-This is a fairly new thing I'm testing.
+The only form of flow control in lsm are gotos (make sure you work in a raptor-safe environment when programming lsm)
+
+Gotos can jump to a location in the code which is defined by a label, like this:
+
+```
+,this code outputs "bop" until it's terminated
+>loop;
+sput "bop\n"
+goto >loop;
+```
+
+Combining gotos with conditional calls (&goto and !goto) you can simulate loops and more complex code in lsm (it also means that it's Turing complete).
+
+#Preproccessor directives
 
 The syntax is: `[ directive arguments ]`. They need to be surrounded with square braces and spaces between the braces and what's inside are optional (`[source foo]` = `[  source        foo]`)
 
-The only one implemented yet is `source`, which reads code from other file(s)
+`source ...` Copies contents from files ... (aka #include)
 
-Example: `[ source foos.lsm bars.lsm ]`
+`file` Returns the name of the file in which the directive is in
+
+`line` Returns the line number in which the directive is in
+
+ex: 
+
+```
+,this two lines of code will output: "we are in line 2"
+sput "we are in line" [line] "\n"
+```

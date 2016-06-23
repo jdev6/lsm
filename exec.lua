@@ -1,26 +1,57 @@
-local inspect = require "inspect"
-
 local calls = require "calls"
 
-lsm_reg = {}
-lsm_success = false
+lsm_reg = {} --registers
+lsm_lab = {} --labels
 
-return function(ast)
+lsm_success = false
+lsm_pc = 1 --program counter
+
+return function(ast, args)
+    lsm_stage = "execution"
     dprint '---exec---'
     dprint(inspect(ast))
 
-    for k,op in pairs(ast) do
-        if op.type == "call" then
-            lsm_success = calls[op.id](unpack(op.args))
+    lsm_reg.argv = args
+    lsm_reg.argc = #args
+
+    local currfile = ""
+    local fileslns = {} --each file and its lines
+
+    while lsm_pc <= #ast do
+        local op = ast[lsm_pc]
+        --print(lsm_pc,op.id)
+
+        if op.type == "line" then
+            --increase line
+            fileslns[currfile] = fileslns[currfile] + 1
+
+        elseif op.type == "file" then
+            --change file
+            currfile = op.id
+            fileslns[currfile] = fileslns[currfile] or 1
+
+        elseif op.type == "call" then
+            if not calls[op.id] then
+                --nonexistent call
+                lsm_error("Attempting to use a nonexistent call", op.id, currfile, fileslns[currfile])
+            else
+                lsm_success = calls[op.id](unpack(op.args))
+            end
 
         elseif op.type == "condcall" then
-            if op.inv then
-                --!call
-                lsm_success = lsm_success or calls[op.id](unpack(op.args))
+            if not calls[op.id] then
+                lsm_error("Attempting to use a nonexistent call", op.id, currfile, fileslns[currfile])
             else
-                --&call
-                lsm_success = lsm_success and calls[op.id](unpack(op.args)) or lsm_success
+                if op.inv then
+                    --!call
+                    lsm_success = lsm_success or calls[op.id](unpack(op.args))
+                else
+                    --&call
+                    lsm_success = lsm_success and calls[op.id](unpack(op.args)) or lsm_success
+                end
             end
         end
+
+        lsm_pc = lsm_pc + 1 --increase pc
     end
 end

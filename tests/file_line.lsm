@@ -1,0 +1,2 @@
+sput "hello!\n";
+sput "this is line " [line] " from file " [file] "!\n";

@@ -12,6 +12,10 @@ contexts:
       scope: punctuation.definition.string.begin.example-c
       push: double_quoted_string
 
+    - match: "'"
+      scope: punctuation.definition.string.begin.example-c
+      push: single_quoted_string
+
     # Comments begin with a '//' and finish at the end of the line
     - match: ','
       scope: punctuation.definition.comment.example-c
@@ -19,7 +23,7 @@ contexts:
 
     # Registers
     - match: '@[a-zA-Z_0-9]*'
-      scope: source.c meta.function.c meta.block.c keyword.operator.comparison.c
+      scope: source.c meta.function.c meta.block.c keyword.control.c
 
     # Keywords
     - match: '(!)?(&)?[a-zA-Z_0-9_]*'
@@ -43,6 +47,14 @@ contexts:
     - match: '\\.'
       scope: constant.character.escape.example-c
     - match: '"'
+      scope: punctuation.definition.string.end.example-c
+      pop: true
+
+  single_quoted_string:
+    - meta_scope: string.quoted.single.example-c
+    - match: '\\.'
+      scope: constant.character.escape.example-c
+    - match: "'"
       scope: punctuation.definition.string.end.example-c
       pop: true
 

@@ -1,0 +1,75 @@
+#!/bin/env lua
+
+local lex, parse, exec = unpack(require("lsm.init"))
+
+local opt = {
+    h = function()
+        eprintf(
+[=[Usage: %s [options] [file [args]]
+Available options are:
+    -h          Show this help message and exit
+    -v          Show version information and exit
+    -tokens     Print tokens and exit
+    -ast        Print abstract syntax tree and exit
+]=],
+    arg[0])
+        exit(0)
+    end,
+
+    v = function()
+        eprintf("lsm %s\nRunning on %s %s (Posix: %s)\n",
+            lsm_version, lsm_host_os, lsm_host_arch, lsm_host_isposix
+        )
+        exit(0)
+    end,
+
+    ast = function()
+        lsm_print_ast = true
+    end,
+
+    tokens = function()
+        lsm_print_tokens = true
+    end
+}
+
+setmetatable(opt, {
+    __index = function(self,k)
+        eprintf("%s: invalid option -%s\nTry '%s -h' for more information.\n",arg[0],k,arg[0])
+        exit(1)
+    end
+})
+
+local file
+local lsm_args = {}
+
+for k,a in ipairs(arg) do
+    if a:sub(1,1) == '-' and #a > 1 then
+        opt[a:sub(2)]()
+
+    else
+        if not file then
+            --execute lsm file
+            file = a
+            local fp,err = io.open(a)
+            if fp then
+                io.input(fp)
+            else
+                eprintf("%s: Error: File can't be read [%s]\n",arg[0],err)
+                exit(1)
+            end
+        else
+            --args for lsm program
+            lsm_args[#lsm_args+1] = a
+        end
+    end
+end
+
+local data = io.read("*a")
+
+if not file then file = "<stdin>" end
+
+local tokens = lex(data, file)
+
+local ast = parse(tokens, file)
+
+exec(ast, lsm_args)

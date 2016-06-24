@@ -1,17 +1,36 @@
 return function(tokens, file)
     lsm_stage = "parser"
+    file = file or "<?>"
+
+    if lsm_print_tokens then
+        print(inspect(tokens))
+        exit(0)
+    end
 
     local i = 1
     local tok
     local currfile = file
     local fileslns = { [currfile] = 1 } --each file and its lines
     local pc = 1
+    local lastline = 1
 
-    local ast = {} 
-    local function push(x) pc=pc+1; table.insert(ast,x) end
+    local ast = {}
+
+    local function lineinc(x)
+        if fileslns[currfile] ~= lastline then
+            x.line = fileslns[currfile]
+        end
+    end
+
+    local function push(x)
+        pc=pc+1
+        lineinc(x)
+        table.insert(ast,x)
+    end
+
     local function next() i=i+1; tok = tokens[i] end
 
-    dprint '--parse--'
+    --dprint '--parse--'
     local cond_call = false
     local cond_call_inv = false
 
@@ -21,12 +40,13 @@ return function(tokens, file)
         if tok.type == "line" then
             --Add another line
             fileslns[currfile] = fileslns[currfile] + 1
-            push(tok)
+            --push(tok)
             next()
 
         elseif tok.type == "file" then
             --Change file
             currfile = tok.value
+            lineinc(tok)
             fileslns[currfile] = fileslns[currfile] or 1
             push {
                 type = tok.type,
@@ -36,6 +56,7 @@ return function(tokens, file)
 
         elseif tok.type == "label" then
             --labels in lsm_lab have a number that is the pc that they refer to, the 'position' in the code
+            lineinc(tok)
             if not lsm_lab[tok.value] then
                 lsm_lab[tok.value] = pc
             end
@@ -43,9 +64,11 @@ return function(tokens, file)
 
         elseif tok.type == "end" then
             --end
+            lineinc(tok)
             next()
 
         elseif tok.type == "keyword" then
+            lineinc(tok)
             local call = {
                 inv = cond_call_inv,
                 type = cond_call and "condcall" or "call",
@@ -56,8 +79,9 @@ return function(tokens, file)
             cond_call, cond_call_inv = false, false
 
             repeat
-                dprint(i,tok.type)
+                --dprint(i,tok.type)
                 next()
+                lineinc(tok)
                 if tok.type == "register" then
                     tok.id = tok.value
                     setmetatable(tok, {
@@ -82,11 +106,17 @@ return function(tokens, file)
                     --Label
                     tok = {
                         type = tok.type,
-                        id = tok.value
+                        id = tok.value,
+                        stack = tok.stack
                     }
 
+                elseif tok.type == "line" then
+                    --Line
+                    fileslns[currfile] = fileslns[currfile] + 1
+
+
                 elseif tok.type == "keyword" then
-                    lsm_error("Unexpected keyword '"..tok.value.."'", nil, currfile, fileslns[currfile])
+                    lsm_error("Unexpected keyword", tok.value, currfile, fileslns[currfile])
                 end
 
                 if tok.type ~= "line" then table.insert(call.args, tok) end
@@ -95,11 +125,15 @@ return function(tokens, file)
             
             call.args[#call.args] = nil
 
-            dprint 'end'
+            --dprint 'end'
             next()
+            if tok then
+                lineinc(tok)
+            end
             push(call)
 
         elseif tok.type == "cond" then
+            lineinc(tok)
             cond_call = true
             cond_call_inv = tok.inv
             next()

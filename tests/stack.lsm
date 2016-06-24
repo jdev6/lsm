@@ -1,0 +1,26 @@
+goto >start;
+
+>pow;
+    pow @_pow_a1 @_pow_a2 @_ret;
+    back;
+
+>square;
+	,squares @_sq_a1 and puts result into @_ret
+    isnil @_sq_a1; &goto >_sq_failure;
+
+    def @_pow_a1 @_sq_a1;
+    def @_pow_a2 2;
+    goto >>pow;
+    back;
+
+    >_sq_failure;
+        def @_ret nil;
+        back;
+
+>start;
+    sput "Enter a number: ";
+    sget @num;
+    tonum @num @_sq_a1;
+    goto >>square;
+    sput @num " squared is " @_ret "\n";
+    exit;

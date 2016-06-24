@@ -4,7 +4,8 @@ flags=""
 
 [[ "$opt" -eq "" ]] && read -p "Enter opt ($optlist): " opt && read -p "Additional flags: " flags
 
-sublime(){
+
+sublime() {
 	#copy sublime syntax file to sublime syntax files location
 	from="misc/lsm.sublime-syntax"
 	dest="$HOME/.config/sublime-text-3/Packages/User/"
@@ -18,7 +19,7 @@ tests() {
 	    echo "   ,,,,,,,,,,,,,,,,,,,,,,,,,,,"
 	    echo "Performing test: $i"
 	    echo "   ,,,,,,,,,,,,,,,,,,,,,,,,,,,"
-	    ./lsm.lua "$i" $flags
+	    lsm "$i" $flags
 	done
 }
 

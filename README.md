@@ -1,8 +1,13 @@
-##lsm
+#lsm
 
 Simple toy programming language written in lua.
 
-#Syntax
+###Installation
+This is a [luarocks package](https://luarocks.org/modules/jdev6/lsm), so just install it with
+
+`luarocks make` (you might need to use `sudo` on Linux)
+
+###Syntax
 
 ```
 ,This is a comment. Comments are single-line and start with a ','
@@ -23,7 +28,15 @@ eq @x "foo";
 !sput "no foos given\n";
 ```
 
-#Calls
+###Tests
+
+There are a lot of tests in the tests/ directory to try different things.
+
+You can run them by typing `./test.sh tests`
+
+I also made a sublime syntax file to make my life easier. Running `./test.sh sublime` will copy it to $HOME/.config/sublime-text-3/Packages/User/
+
+###Calls
 
 `def a x` Set the value of a to x
 
@@ -45,6 +58,8 @@ eq @x "foo";
 
 `goto label` Jump to the location in the code that label represents
 
+`sigint label` Jump to the location in the code that label represents when SIGINT is recieved (aka control-c handler) see tests/yes.lsm
+
 `eq ...` Sets the success code to true if all arguments are equal
 
 `gt a b` Sets the success code to true if a > b
@@ -59,7 +74,7 @@ eq @x "foo";
 
 Example : `arrdef a 2 4 6 8 ,defines a with array {2,4,6,8}`
 
-`arridx a idx b` Indexes array a with index idx and puts its value in b
+`arrget a idx b` Indexes array a with index idx and puts its value in b
 
 `arrset a idx b` Sets the value at index idx in array a to b
 
@@ -67,7 +82,7 @@ Example : `arrdef a 2 4 6 8 ,defines a with array {2,4,6,8}`
 
 more to add in the future
 
-#Flow control
+###Flow control
 
 The only form of flow control in lsm are gotos (make sure you work in a raptor-safe environment when programming lsm)
 
@@ -82,7 +97,7 @@ goto >loop;
 
 Combining gotos with conditional calls (&goto and !goto) you can simulate loops and more complex code in lsm (it also means that it's Turing complete).
 
-#Preproccessor directives
+###Preproccessor directives
 
 The syntax is: `[ directive arguments ]`. They need to be surrounded with square braces and spaces between the braces and what's inside are optional (`[source foo]` = `[  source        foo]`)
 

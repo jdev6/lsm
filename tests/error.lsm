@@ -4,9 +4,8 @@
 ,def @invalid_number 12.0x.22.0;
 
 ,parser error
-def 
-
-invalidargument;
+sput 1 bep
+;
 
 ,execution error
 badcall "foo";

@@ -49,7 +49,7 @@ function calls.eq(...)
 end
 
 function calls.exit(errno)
-    os.exit(errno)
+    exit(errno and errno.value or 0)
 end
 
 function calls.add(a,b,c)
@@ -122,6 +122,25 @@ function calls.mul(a,b,c)
     end
 end
 
+function calls.pow(a,b,c)
+    --Exponentiation
+    if not a or not b or not c then
+        return false
+
+    elseif type(a.value) == "number" and type(b.value) == "number" then
+        c.value = math.pow(a.value, b.value)
+        return true
+    else
+        c.value = nil
+        return false
+    end
+end
+
+function calls.isnil(a)
+    --Sets success value to true if a is nil
+    return a.value == nil
+end
+
 function calls.arrdef(a, ...)
     --Create array
     if not a then
@@ -135,7 +154,7 @@ function calls.arrdef(a, ...)
     return true
 end
 
-function calls.arridx(a, idx, b)
+function calls.arrget(a, idx, b)
     if not a or not idx or not b then
         return false
     end
@@ -185,12 +204,48 @@ function calls.lt(a,b)
     return a.value < b.value
 end
 
+function calls.error(err,ext)
+    local str = err.value
+
+    lsm_error(str, ext and ext.value or nil, _file,_line)
+end
+
+if lsm_host_isposix then
+    function calls.sigint(lab)
+        --SIGINT handler, takes a label as an argument
+        --Makes the program jump to that label when SIGINT (ctrl-c) is recieved
+        lsm_handlesigint = true
+        lsm_sigintpc = lsm_lab[lab.id]
+
+        return lsm_sigintpc ~= nil
+    end
+else
+    function calls.sigint()
+        return false
+    end
+end
+
 calls["goto"] = function(lab) --must do this cause goto is a reserved lua keyword
     --jump to position in code that label has
     if lsm_lab[lab.id] then
+        if lab.stack then
+            lsm_stack[#lsm_stack+1] = lsm_pc --insert into stack
+        end
         lsm_pc = lsm_lab[lab.id]
+        return true
     else
-        print ("blop error, lab is", lab.id)
+        lsm_error("Label doesn't exist", lab.id, _file,_line)
+    end
+end
+
+function calls.back()
+    --go back in the stack
+    if #lsm_stack > 0 then
+        lsm_pc = lsm_stack[#lsm_stack] + 1  --jump back to the last place in the stack
+        table.remove(lsm_stack, #lsm_stack) --remove last value from stack
+        return true
+    else
+        lsm_error("Cannot go back", "Stack is empty", _file,_line)
     end
 end
 

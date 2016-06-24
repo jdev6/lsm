@@ -1,0 +1,20 @@
+,lsm version of GNU's yes program
+
+sigint >sigint; ,setup SIGINT handler (catch control-c)
+goto >start;
+
+>start;
+    ,if there are more than 0 arguments, then txt will be the first, else it will default to "y"
+    gt @argc 0;
+    &arrget @argv 1 @txt;
+    !def @txt "y";
+
+>loop;
+    ,print txt until interrupted
+    sput @txt;
+    put '\n';
+    goto >loop;
+
+>sigint;
+    ,sput "ctrl-c recieved, quitting...\n";
+    exit 1;

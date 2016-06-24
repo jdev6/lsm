@@ -1,12 +1,12 @@
 arrdef @evens 0 2 4 6 8 10; ,define array: {0,2,4,6,8,10}
 
-arridx @evens 4 @n1; ,element 4 in array is 6
+arrget @evens 4 @n1; ,element 4 in array is 6
 sput "Element 4 in array is " @n1 "\n";
 
 arrset @evens 4 42; ,redefine evens[4]
-arridx @evens 4 @n1;
+arrget @evens 4 @n1;
 sput "Element 4 in array is now " @n1 "\n";
 
 arrset @evens "foo" "bar"; ,string index
-arridx @evens "foo" @x;
+arrget @evens "foo" @x;
 sput "Element \"foo\" in array is " @x "\n";

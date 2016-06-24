@@ -9,7 +9,7 @@ function lsm_add_call(name, req, call)
     lsm_calls[name] = call --add call
 end
 
-require "src.lib.std"
+require "lsm.lib.std"
 
 function lsm_call(what, args, _file,_line)
     if not lsm_calls[what] then

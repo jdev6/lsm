@@ -4,7 +4,7 @@ if lsm_host_isposix then
     signal = require "posix.signal"
 end
 
-local calls = require "lsm.calls"
+require "lsm.calls"
 
 lsm_reg   = {} --registers
 lsm_lab   = {} --labels
@@ -25,6 +25,7 @@ return function(ast, args)
 
     lsm_reg.argv = args
     lsm_reg.argc = #args
+    lsm_reg.prog = lsm_main_file
 
     local currfile = ""
     local fileslns = {} --each file and its lines
@@ -52,34 +53,24 @@ return function(ast, args)
         if op.type == "file" then
             --change file
             lineinc(op)
+
             currfile = op.id
             fileslns[currfile] = fileslns[currfile] or 1
 
         elseif op.type == "call" then
             lineinc(op)
 
-            if not calls[op.id] then
-                --nonexistent call
-                lsm_error("Attempting to use a nonexistent call", op.id, currfile, fileslns[currfile])
-            else
-                _file, _line = currfile, fileslns[currfile]
-                lsm_success = calls[op.id](unpack(op.args))
-            end
+            lsm_success = lsm_call(op.id, op.args, currfile, fileslns[currfile])
 
         elseif op.type == "condcall" then
             lineinc(op)
 
-            if not calls[op.id] then
-                lsm_error("Attempting to use a nonexistent call", op.id, currfile, fileslns[currfile])
+            if op.inv then
+                --!call
+                lsm_success = lsm_success or lsm_call(op.id, op.args, currfile, fileslns[currfile])
             else
-                _file, _line = currfile, fileslns[currfile]
-                if op.inv then
-                    --!call
-                    lsm_success = lsm_success or calls[op.id](unpack(op.args))
-                else
-                    --&call
-                    lsm_success = lsm_success and calls[op.id](unpack(op.args)) or lsm_success
-                end
+                --&call
+                lsm_success = lsm_success and lsm_call(op.id, op.args, currfile, fileslns[currfile])
             end
         end
 

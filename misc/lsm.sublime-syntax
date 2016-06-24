@@ -20,6 +20,11 @@ contexts:
     - match: ','
       scope: punctuation.definition.comment.example-c
       push: line_comment
+  
+    #Shebang
+    - match: '^#!'
+      scope: punctuation.definition.comment.example-c
+      push: shebang
 
     # Registers
     - match: '@[a-zA-Z_0-9]*'
@@ -59,6 +64,11 @@ contexts:
       pop: true
 
   line_comment:
+    - meta_scope: comment.line.example-c
+    - match: $
+      pop: true
+  
+  shebang:
     - meta_scope: comment.line.example-c
     - match: $
       pop: true

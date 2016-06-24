@@ -37,8 +37,9 @@ build = {
         ["lsm.lex"]     = "src/lex.lua",
         ["lsm.parse"]   = "src/parse.lua",
         ["lsm.exec"]    = "src/exec.lua",
-        ["lsm.calls"]   = "src/calls.lua"
-    },
+        ["lsm.calls"]   = "src/calls.lua",
+        ["lsm.lib.std"] = "src/lib/std.lua"
+        },
 
     install = {
         bin = {"bin/lsm"}

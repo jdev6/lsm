@@ -17,7 +17,14 @@ local escaped = {
     ['\n'] = ''
 }
 
-local ch_escaped = escaped
+local ch_escaped = (function(t) --clone escaped table
+    local t2 = {}
+    for k,v in pairs(t) do
+        t2[k] = v
+    end
+    return t2
+end)(escaped)
+
 ch_escaped['"'] = nil
 ch_escaped['\''] = '\''
 
@@ -31,6 +38,7 @@ local primitives = {
 local function lex(data, file)
     lsm_stage = "lexer"
     file = file or "<?>"
+    lsm_main_file = file
 
     local i = 1
     local c
@@ -296,7 +304,7 @@ local function lex(data, file)
                 if c == '\\' then
                     --Backslash
                     next()
-                    str = str .. escaped[c]
+                    str = str .. (escaped[c] or "")
                     
                 else
                     str = str .. c
@@ -317,8 +325,12 @@ local function lex(data, file)
             --next()
 
         else
-            lsm_error("Unexpected "..c, "Syntax error", currfile,fileslns[currfile])
-            next()
+            if c ~= '#' and fileslns[currfile] ~= 1 and next() and c ~= "!" then
+                lsm_error("Unexpected "..c, "Syntax error", currfile,fileslns[currfile])
+            else
+                --Ignore shebang
+                repeat next() until c == '\n'
+            end
         end
     end
 

@@ -1,0 +1,26 @@
+#!/bin/env lsm
+,shebangs are also ignored by lsm
+
+,copy contents of file to stdout
+
+sigint >sigint;
+
+gt @argc 0; ,if there are arguments the file will be the first argument
+!goto >cat; ,else just use stdin
+
+arrget @argv 1 @file;
+inf @file; ,try to set file as input stream
+!goto >notfound; ,jump to >notfound if we can't set the file as input stream
+
+>cat;
+    get @c;
+    &put @c;
+    &goto >cat;
+    !exit 0; ,exit when @c is nil (EOF)
+
+>notfound;
+    sput @prog ": " @file ": Cannot open file\n";
+    exit 1;
+
+>sigint;
+    exit 1;

@@ -8,6 +8,9 @@ lsm_host_isposix = ({
     BSD   = true
 })[lsm_host_os] or false
 
+lsm_inf  = io.stdin
+lsm_outf = io.stdout
+
 
 function lsm_error(str, err,f,ln)
     err = err and (": [%s]"):format(err) or ""

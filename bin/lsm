@@ -41,6 +41,7 @@ setmetatable(opt, {
 
 local file
 local lsm_args = {}
+local filep = io.stdin
 
 for k,a in ipairs(arg) do
     if a:sub(1,1) == '-' and #a > 1 then
@@ -52,7 +53,7 @@ for k,a in ipairs(arg) do
             file = a
             local fp,err = io.open(a)
             if fp then
-                io.input(fp)
+                filep = fp
             else
                 eprintf("%s: Error: File can't be read [%s]\n",arg[0],err)
                 exit(1)
@@ -64,7 +65,7 @@ for k,a in ipairs(arg) do
     end
 end
 
-local data = io.read("*a")
+local data = filep:read("*a")
 
 if not file then file = "<stdin>" end
 

@@ -2,7 +2,7 @@ opt=$1
 optlist="tests, sublime"
 flags=""
 
-[[ "$opt" -eq "" ]] && read -p "Enter opt ($optlist): " opt && read -p "Additional flags: " flags
+[[ "$opt" == "" ]] && read -p "Enter opt ($optlist): " opt && read -p "Additional flags: " flags
 
 
 sublime() {

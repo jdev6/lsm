@@ -54,9 +54,13 @@ I also made a sublime syntax file to make my life easier. Running `./test.sh sub
 
 `div a b c` Division
 
-`sub a b c` Substraction
+`sub a b c` Subtraction
 
-`goto label` Jump to the location in the code that label represents
+`pow a b c` Exponentiation
+
+`goto label` Jump to the location in the code that label represents (See Flow control)
+
+`back` Go back in the stack (See Flow control)
 
 `sigint label` Jump to the location in the code that label represents when SIGINT is recieved (aka control-c handler) see tests/yes.lsm
 
@@ -94,6 +98,32 @@ Gotos can jump to a location in the code which is defined by a label, like this:
 sput "bop\n"
 goto >loop;
 ```
+
+Or, you can use a special syntax to make gotos enter in the stack, which means that you can return from the label to where you called goto:
+
+```
+goto >start; ,uses normal syntax because we don't need to return from >start
+
+>addxy;
+    add @x @y @z;
+    back; ,go back to where goto was called and continue, in this case line 11
+
+>start;
+    def @x 5;
+    def @y 2;
+    goto >>addxy; ,uses >> instead of > to tell goto to enter the stack
+    sput @x " + " @y " is " @z "\n"; ,'5 + 2 is 7';
+```
+
+To explain what is happening here:
+
+>     - First, we jump to >start (line 8)
+
+>     - Then, in line 11, we jump to >addxy (line 3) but entering in the stack, this means that the stack (which is an array) will look like this: { line10 } (it isn't stored as lines internally, but as a number that represents the operation lsm is executing, but for the sake of simplicity we'll leave it like this)
+
+>     - Next, when we arrive to back, lsm looks in the stack the most recent value, which in this case would be line10, jumps to its value + 1 (otherwise we would loop all the time between >addxy and line10), and removes it from the stack, in this case leaving it empty.
+
+>     - Then we call sput and the program ends.
 
 Combining gotos with conditional calls (&goto and !goto) you can simulate loops and more complex code in lsm (it also means that it's Turing complete).
 

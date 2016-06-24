@@ -9,26 +9,26 @@ end
 function calls.sput(...)
     --Print strings
     for k,a in ipairs{...} do
-        io.stdout:write(tostring(a.value))
+        lsm_outf:write(tostring(a.value))
     end
     return true
 end
 
 function calls.put(a)
     --Print char
-    io.stdout:write(string.char(a.value))
+    lsm_outf:write(string.char(a.value))
     return true
 end
 
 function calls.sget(a)
     --Get a line from stdin
-    a.value = io.stdin:read("*l")
+    a.value = lsm_inf:read("*l")
     return true
 end
 
 function calls.get(a)
     --Get a character from stdin
-    a.value = string.byte(io.stdin:read(1))
+    a.value = string.byte(lsm_inf:read(1))
     return true
 end
 
@@ -231,7 +231,7 @@ calls["goto"] = function(lab) --must do this cause goto is a reserved lua keywor
         if lab.stack then
             lsm_stack[#lsm_stack+1] = lsm_pc --insert into stack
         end
-        lsm_pc = lsm_lab[lab.id]
+        lsm_pc = lsm_lab[lab.id] - 1
         return true
     else
         lsm_error("Label doesn't exist", lab.id, _file,_line)
@@ -241,7 +241,7 @@ end
 function calls.back()
     --go back in the stack
     if #lsm_stack > 0 then
-        lsm_pc = lsm_stack[#lsm_stack] + 1  --jump back to the last place in the stack
+        lsm_pc = lsm_stack[#lsm_stack]  --jump back to the last place in the stack
         table.remove(lsm_stack, #lsm_stack) --remove last value from stack
         return true
     else

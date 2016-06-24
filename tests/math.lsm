@@ -1,5 +1,4 @@
 ,Read a number from stdin and print its double
-
 sput "Enter a number -> ";
 sget @input;
 tonum @input @num; ,Convert input into number

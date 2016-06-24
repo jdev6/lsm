@@ -6,7 +6,7 @@ lsm_add_call("def",
     function(a,b)
         --Define the value of a register
         a.value = b == nil and nil or b.value
-    return true
+        return true
     end
 )
 
@@ -20,7 +20,7 @@ lsm_add_call("sput",
         for k,a in ipairs{...} do
             lsm_outf:write(tostring(a.value))
         end
-    return true
+        return true
     end
 )
 
@@ -31,7 +31,7 @@ lsm_add_call("put",
     function(a)
         --Print char
         lsm_outf:write(string.char(a.value))
-    return true
+        return true
     end
 )
 
